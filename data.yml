@@ -1,0 +1,30 @@
+flow: auto_build
+recurring: ''
+relations:
+- from: census_data_source
+  to: custom_task
+tasks:
+- dataset: test
+  left: 100
+  title: census_data_source
+  top: 100
+  type: data
+- algorithm: ''
+  computes:
+  - carvana_AWS.medium
+  image: intel-optimized-tensorflow:2.3.0-ubuntu-20.04-jupyter
+  input: python ./src/models/census_data.py
+  left: '300'
+  output_dir: output
+  params:
+  - key: data_path
+    type: categorical
+    values:
+    - /data/test/adult.data
+  - key: epochs
+    type: discrete
+    values:
+    - '4'
+  title: custom_task
+  top: '100'
+  type: exec

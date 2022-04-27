@@ -1,0 +1,157 @@
+---
+flow: Flow 1
+recurring:
+tasks:
+- input: python ./src/models/merged_tf.py
+  params:
+  - key: data_path
+    type: categorical
+    min: 0
+    max: 0
+    scale: linear
+    steps: 0
+    values:
+    - "/input/data_prep/output/output.pkl"
+  - key: epochs
+    type: integer
+    min: 5
+    max: 20
+    scale: linear
+    steps: 4
+    values: []
+  computes:
+  - carvana_AWS.medium
+  image: intel-optimized-tensorflow:2.3.0-ubuntu-20.04-jupyter
+  description:
+  type: exec
+  git_commit: latest
+  git_branch: public_dataset
+  mount_folders: []
+  icon:
+  output_dir: output
+  confirmation: false
+  standalone_mode: false
+  notify_on_error: false
+  notify_on_success: false
+  emails: []
+  objective:
+  objective_goal:
+  objective_function: min
+  max_jobs: -1
+  parallel_jobs: -1
+  algorithm: GridSearch
+  queue_slug: j3g6pvky2xhgzh2p3jvc
+  title: Train
+  top: 103
+  left: 771
+  conditions: []
+  library:
+- input: 'python ./src/models/census_data.py '
+  params:
+  - key: data_path
+    type: categorical
+    min: 0
+    max: 0
+    scale: linear
+    steps: 0
+    values:
+    - "/data/test/adult.data"
+  computes:
+  - carvana_AWS.medium
+  image: intel-optimized-tensorflow:2.3.0-ubuntu-20.04-jupyter
+  description:
+  type: exec
+  git_commit: latest
+  git_branch: public_dataset
+  mount_folders: []
+  icon:
+  output_dir: output
+  confirmation: false
+  standalone_mode: false
+  notify_on_error: false
+  notify_on_success: false
+  emails: []
+  objective:
+  objective_goal:
+  objective_function: min
+  max_jobs: -1
+  parallel_jobs: 3
+  algorithm: GridSearch
+  queue_slug: j3g6pvky2xhgzh2p3jvc
+  title: Data_Prep
+  top: 101
+  left: 322
+  conditions: []
+  library:
+  commit: ca3512f4dfa95a03169c5a670a4c91a19b3077b4
+- input: 'export PYTHONPATH=$PYTHONPATH:/cnvrg; python ./src/models/check_census_data.py '
+  params:
+  - key: data_path
+    type: categorical
+    min: 0
+    max: 0
+    scale: linear
+    steps: 0
+    values:
+    - "/input/data_prep/output/output.pkl"
+  computes:
+  - carvana_AWS.medium
+  image: intel-optimized-tensorflow:2.3.0-ubuntu-20.04-jupyter
+  description:
+  type: exec
+  git_commit: latest
+  git_branch: public_dataset
+  mount_folders: []
+  icon:
+  output_dir: output
+  confirmation: false
+  standalone_mode: false
+  notify_on_error: false
+  notify_on_success: false
+  emails: []
+  objective:
+  objective_goal:
+  objective_function: min
+  max_jobs: -1
+  parallel_jobs: -1
+  algorithm: GridSearch
+  queue_slug: j3g6pvky2xhgzh2p3jvc
+  title: Data_Integrity
+  top: 101
+  left: 548
+  conditions: []
+  library:
+- title: test
+  top: 100
+  left: 100
+  description:
+  conditions: []
+  type: data
+  dataset: test
+  data_commit:
+  data_query:
+  use_cached: true
+  sync_type: sync_all
+- title: Model Deploy
+  top: 106
+  left: 986
+  description:
+  conditions:
+  - target: 0.0
+    task: kdvfnmqtwc
+    objective: max
+    tag_key: accuracy
+    value: ''
+  type: deploy
+  confirmation: false
+  endpoint_id: rtkx79ntnhcvzcaxy5yw
+  endpoint_title: test-model-deploy
+relations:
+- from: test
+  to: Data_Prep
+- from: Data_Prep
+  to: Data_Integrity
+- from: Data_Integrity
+  to: Train
+- from: Train
+  to: Model Deploy
