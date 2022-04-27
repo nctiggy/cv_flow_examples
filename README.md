@@ -1,5 +1,9 @@
 # cv_flow_examples
 
+`sample.py` has the example code
+
+`data.yaml` is the file we write and then apply
+
 Fill in the appropriate fields in .cnvrg_auth
 
 ## To Run locally on your laptop
