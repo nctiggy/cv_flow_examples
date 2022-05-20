@@ -1,30 +1,58 @@
-flow: auto_build
+flow: carvana_test
 recurring: ''
 relations:
-- from: census_data_source
-  to: custom_task
+- from: data_source
+  to: data_prep
+- from: data_prep
+  to: data_integrity
+- from: data_integrity
+  to: train
+- from: train
+  to: deploy_model
 tasks:
 - dataset: test
-  left: 100
-  title: census_data_source
-  top: 100
+  title: data_source
   type: data
 - algorithm: ''
   computes:
   - carvana_AWS.medium
   image: intel-optimized-tensorflow:2.3.0-ubuntu-20.04-jupyter
   input: python ./src/models/census_data.py
-  left: '300'
   output_dir: output
   params:
   - key: data_path
     type: categorical
-    values:
-    - /data/test/adult.data
+    value: /data/test/adult.data
+  title: data_prep
+  type: exec
+- algorithm: ''
+  computes:
+  - carvana_AWS.medium
+  image: intel-optimized-tensorflow:2.3.0-ubuntu-20.04-jupyter
+  input: export PYTHONPATH=$PYTHONPATH:/cnvrg; python ./src/models/check_census_data.py
+  output_dir: output
+  params:
+  - key: data_path
+    type: categorical
+    value: /input/data_prep/output/output.pkl
+  title: data_integrity
+  type: exec
+- algorithm: ''
+  computes:
+  - carvana_AWS.medium
+  image: intel-optimized-tensorflow:2.3.0-ubuntu-20.04-jupyter
+  input: python ./src/models/merged_tf.py
+  output_dir: output
+  params:
+  - key: data_path
+    type: categorical
+    value: /input/data_prep/output/output.pkl
   - key: epochs
     type: discrete
-    values:
-    - '4'
-  title: custom_task
-  top: '100'
+    value: '4'
+  title: train
   type: exec
+- conditions: []
+  endpoint_title: deploymodel
+  title: deploy_model
+  type: deploy
